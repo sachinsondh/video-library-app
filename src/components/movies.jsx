@@ -6,6 +6,7 @@ import Filtering from "./common/filtering";
 import { paginate } from "../utils/paginate";
 import MoviesTable from "./movies-table";
 import _ from "lodash";
+import SearchBox from "./common/searchbox";
 
 class Movies extends Component {
   state = {
@@ -13,6 +14,8 @@ class Movies extends Component {
     genres: getGenres(),
     pageSize: 4,
     currentPage: 1,
+    searchQuery: "",
+    selectedGenre: null,
     sortColumn: { path: "title", order: "asc" },
   };
   handleDelete = (movie) => {
@@ -24,7 +27,10 @@ class Movies extends Component {
     this.setState({ currentPage: page });
   };
   handleGenreSelect = (genre) => {
-    this.setState({ selectedGenre: genre, currentPage: 1 });
+    this.setState({ selectedGenre: genre, searchQuery: "", currentPage: 1 });
+  };
+  handleSearch = (query) => {
+    this.setState({ searchQuery: query, selectedGenre: null, currentPage: 1 });
   };
 
   handleSort = (sortColumn) => {
@@ -39,7 +45,7 @@ class Movies extends Component {
       movies: allMovies,
       sortColumn,
     } = this.state;
-    const filtered = selectedGenre
+    let filtered = selectedGenre
       ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
       : allMovies;
 
@@ -49,7 +55,13 @@ class Movies extends Component {
   };
 
   render() {
-    const { pageSize, currentPage, movies: allMovies, sortColumn } = this.state;
+    const {
+      pageSize,
+      currentPage,
+      movies: allMovies,
+      sortColumn,
+      searchQuery,
+    } = this.state;
     if (this.state.movies.length === 0)
       return <p>There are no movies in database </p>;
 
@@ -66,8 +78,14 @@ class Movies extends Component {
             />
           </div>
           <div className="col">
+            <button
+              onClick={() => this.props.history.push("/movies/new")}
+              className="btn btn-primary"
+            >
+              New Movie
+            </button>
             <p>Showing {totalCount} movies</p>
-
+            <SearchBox value={searchQuery} onChange={this.handleSearch} />
             <MoviesTable
               onDelete={this.handleDelete}
               movies={movies}
